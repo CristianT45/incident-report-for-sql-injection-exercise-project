@@ -1,0 +1,74 @@
+Reporte de Incidente de Seguridad – Inyección SQL en DVWA 
+
+
+# Introducción 
+
+Este documento recoge lo ocurrido durante una práctica de seguridad web en la que se detectó y explotó una vulnerabilidad 
+de tipo inyección SQL en la aplicación de pruebas DVWA (Damn Vulnerable Web Application). El objetivo de esta práctica era 
+entender cómo funciona este tipo de ataque, cuál es su impacto real y cómo se puede evitar en entornos de desarrollo reales. 
+
+
+# Descripción del Incidente 
+
+Durante la sesión práctica, se comprobó que la aplicación DVWA, configurada en nivel de seguridad bajo, era vulnerable a 
+inyecciones SQL simples. Aprovechando un campo de entrada no protegido, fue posible modificar una consulta SQL para acceder 
+a toda la lista de usuarios almacenada en la base de datos, sin necesidad de estar autenticado ni tener permisos especiales. 
+
+
+# Proceso de Reproducción 
+
+Los pasos realizados para explotar la vulnerabilidad fueron los siguientes: 
+- Se accedió a la sección de "SQL Injection" dentro de DVWA. 
+- En el campo donde normalmente se introduce un ID de usuario, se escribió el siguiente valor: 
+
+    1' OR '1'='1 
+
+- Al enviar el formulario, la página devolvió de inmediato todos los usuarios registrados en la base de datos, confirmando 
+  que la inyección había funcionado.
+ 
+- La razón de esto es que la consulta original fue manipulada para que siempre devuelva verdadero. Es decir, algo como: 
+
+    SELECT * FROM users WHERE id = '1' OR '1'='1'; 
+
+- Al evaluarse la condición '1'='1' como siempre verdadera, la base de datos respondió con todos los registros. 
+
+
+# Impacto del Incidente 
+
+Aunque se trata de un entorno de pruebas, este tipo de vulnerabilidad representa una amenaza seria en aplicaciones reales. 
+Si esta debilidad existiera en producción, un atacante podría: 
+
+- Ver datos privados de los usuarios. 
+
+- Modificar información almacenada. 
+
+- Obtener acceso a otras partes sensibles del sistema. 
+
+- Y en casos más graves, tomar el control total del servidor. 
+
+Esto no solo pone en riesgo los datos, sino también la reputación de la empresa y puede implicar sanciones legales dependiendo
+de la normativa aplicable. 
+
+
+# Recomendaciones 
+
+Para evitar problemas de este tipo, se recomienda: 
+
+- Validar correctamente todos los datos de entrada, nunca confiar en lo que el usuario escribe en formularios. 
+
+- Usar sentencias preparadas o consultas parametrizadas, que protegen el código SQL de ser modificado por entradas maliciosas. 
+
+- No mostrar errores detallados al usuario final, ya que pueden dar pistas sobre la estructura interna del sistema. 
+
+- Realizar pruebas de seguridad periódicas para detectar este y otros problemas antes de que lo haga alguien con malas 
+  intenciones. 
+
+
+# Conclusión 
+
+Esta práctica sirvió para ver de forma clara cómo una simple inyección SQL puede comprometer la seguridad de una aplicación. 
+Si bien se trató de un entorno preparado para aprender, las lecciones que deja son totalmente aplicables al desarrollo real. 
+Proteger las entradas, usar buenas prácticas de codificación y revisar periódicamente la seguridad de los sistemas son pasos 
+fundamentales para evitar este tipo de incidentes. 
+
+ 
